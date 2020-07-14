@@ -1,0 +1,29 @@
+trigger:
+  branches:
+    include:
+    - master
+pr:
+  branches:
+    include:
+    - master
+
+stages:
+- template: /.azdo/templates/stages/build.yml
+
+- template: /.azdo/templates/stages/deploy.yml
+  parameters:
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'))
+    environment: ci
+    serviceConnection: AzureRMConnection
+
+- template: /.azdo/templates/stages/destroy.yml
+  parameters:
+    condition: and(always(), eq(variables['Build.Reason'], 'PullRequest'))
+    environment: ci
+    serviceConnection: AzureRMConnection
+
+- template: /.azdo/templates/stages/deploy.yml
+  parameters:
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    environment: dev
+    serviceConnection: AzureRMConnection

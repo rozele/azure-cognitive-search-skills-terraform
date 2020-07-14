@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "function_app_name": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "function_app_id": "[resourceId('Microsoft.Web/sites', parameters('function_app_name'))]"
+  },
+  "resources": [],
+  "outputs": {
+    "function_key": {
+      "type": "string",
+      "value": "[listkeys(concat(variables('function_app_id'), '/host/default'), '2018-11-01').functionKeys.default]"
+    }
+  }
+}

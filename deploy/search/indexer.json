@@ -1,0 +1,45 @@
+{
+  "name": "${indexer_name}",
+  "dataSourceName": "${data_source_name}",
+  "skillsetName": "${skillset_name}",
+  "targetIndexName": "${index_name}",
+  "disabled": null,
+  "schedule": {
+    "interval": "PT1H",
+    "startTime": "0001-01-01T00:00:00Z"
+  },
+  "parameters": {
+    "batchSize": null,
+    "maxFailedItems": null,
+    "maxFailedItemsPerBatch": null,
+    "base64EncodeKeys": false,
+    "configuration": {
+      "dataToExtract": "contentAndMetadata",
+      "parsingMode": "json"
+    }
+  },
+  "fieldMappings": [
+    {
+      "sourceFieldName": "metadata_storage_path",
+      "targetFieldName": "id",
+      "mappingFunction": {
+        "name": "base64Encode",
+        "parameters": null
+      }
+    }
+  ],
+  "outputFieldMappings": [
+    {
+      "sourceFieldName": "/document/text",
+      "targetFieldName": "text"
+    },
+    {
+      "sourceFieldName": "/document/reversedText",
+      "targetFieldName": "reversedText"
+    },
+    {
+      "sourceFieldName": "/document/lang",
+      "targetFieldName": "lang"
+    }
+  ]
+}

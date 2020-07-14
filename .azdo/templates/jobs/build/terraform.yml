@@ -1,0 +1,20 @@
+jobs:
+- job: Terraform
+  steps:
+  - task: TerraformInstaller@0
+    displayName: 'terraform install'
+    inputs:
+      terraformVersion: 0.12.24
+
+  - task: TerraformCLI@0
+    displayName: 'terraform init'
+    inputs:
+      command: init
+      commandOptions: -backend=false
+      workingDirectory: $(Build.SourcesDirectory)/deploy/terraform
+
+  - task: TerraformCLI@0
+    displayName: 'terraform validate'
+    inputs:
+      command: validate
+      workingDirectory: $(Build.SourcesDirectory)/deploy/terraform

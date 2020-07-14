@@ -1,0 +1,66 @@
+parameters:
+  condition: ''
+  environment: ''
+  serviceConnection: ''
+
+stages:
+- stage: ${{ format('Destroy_{0}', parameters.environment) }}
+  displayName: Destroy Environment '${{ parameters.environment }}'
+  condition: ${{ parameters.condition }}
+  jobs:
+  - job: TerraformDestroy
+    variables:
+    - template: /.azdo/templates/variables/deploy.yml
+      parameters:
+        environment: ${{ parameters.environment }}
+    steps:
+    - download: current
+
+    - task: TerraformInstaller@0
+      displayName: terraform install 0.12.24
+      inputs:
+        terraformVersion: 0.12.24
+
+    - task: TerraformCLI@0
+      displayName: terraform init
+      inputs:
+        command: init
+        workingDirectory: $(Build.SourcesDirectory)/deploy/terraform
+        backendType: azurerm
+        backendServiceArm: ${{ parameters.serviceConnection }}
+        ensureBackend: true
+        backendAzureRmResourceGroupName: $(deploy.terraform.backendAzureRmResourceGroupName)
+        backendAzureRmResourceGroupLocation: $(deploy.terraform.backendAzureRmResourceGroupLocation)
+        backendAzureRmStorageAccountName: $(deploy.terraform.backendAzureRmStorageAccountName)
+        backendAzureRmContainerName: $(deploy.terraform.backendAzureRmContainerName)
+        backendAzureRmKey: $(deploy.terraform.backendAzureRmKey)
+
+    - task: TerraformCLI@0
+      displayName: terraform destroy
+      inputs:
+        command: destroy
+        environmentServiceName: ${{ parameters.serviceConnection }}
+        workingDirectory: $(Build.SourcesDirectory)/deploy/terraform
+        commandOptions: >-
+          -var-file="$(Agent.BuildDirectory)/terraform/$(deploy.terraform.tfVarsFile)"
+
+  - job: CleanupTerraformState
+    dependsOn:
+    - TerraformDestroy
+    variables:
+    - template: /.azdo/templates/variables/deploy.yml
+      parameters:
+        environment: ${{ parameters.environment }}
+    steps:
+    - task: AzureCLI@2
+      displayName: Delete tfstate storage container
+      inputs:
+        azureSubscription: ${{ parameters.serviceConnection }}
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: >-
+          az storage blob delete \
+            --auth-mode login \
+            --account-name $(deploy.terraform.backendAzureRmStorageAccountName) \
+            --container-name $(deploy.terraform.backendAzureRmContainerName) \
+            --name $(deploy.terraform.backendAzureRmKey)

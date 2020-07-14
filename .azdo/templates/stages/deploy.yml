@@ -1,0 +1,73 @@
+parameters:
+  condition: ''
+  environment: ''
+  serviceConnection: ''
+
+stages:
+- stage: ${{ format('Deploy_{0}', parameters.environment) }}
+  displayName: Deploy to Environment '${{ parameters.environment }}'
+  condition: ${{ parameters.condition }}
+  jobs:
+  - deployment: Terraform
+    environment: ${{ parameters.environment }}
+    variables:
+    - template: /.azdo/templates/variables/deploy.yml
+      parameters:
+        environment: ${{ parameters.environment }}
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+
+          - task: TerraformInstaller@0
+            displayName: terraform install 0.12.24
+            inputs:
+              terraformVersion: 0.12.24
+
+          - task: TerraformCLI@0
+            displayName: terraform init
+            inputs:
+              command: init
+              workingDirectory: $(Build.SourcesDirectory)/deploy/terraform
+              backendType: azurerm
+              backendServiceArm: ${{ parameters.serviceConnection }}
+              ensureBackend: true
+              backendAzureRmResourceGroupName: $(deploy.terraform.backendAzureRmResourceGroupName)
+              backendAzureRmResourceGroupLocation: $(deploy.terraform.backendAzureRmResourceGroupLocation)
+              backendAzureRmStorageAccountName: $(deploy.terraform.backendAzureRmStorageAccountName)
+              backendAzureRmContainerName: $(deploy.terraform.backendAzureRmContainerName)
+              backendAzureRmKey: $(deploy.terraform.backendAzureRmKey)
+
+          - bash: |
+              tee $(deploy.terraform.tfVarsFile) <<EOF
+              location="eastus"
+              environment="${{ parameters.environment }}"
+              build_id="$(Build.BuildId)"
+              functions_package_path = "$(Agent.BuildDirectory)/skills/src.zip"
+              EOF
+            displayName: Generate terraform.tfvars
+            workingDirectory: $(Build.ArtifactStagingDirectory)
+
+          - task: TerraformCLI@0
+            displayName: terraform plan
+            inputs:
+              command: plan
+              environmentServiceName: ${{ parameters.serviceConnection }}
+              workingDirectory: $(Build.SourcesDirectory)/deploy/terraform
+              commandOptions: >-
+                -var-file="$(Build.ArtifactStagingDirectory)/$(deploy.terraform.tfVarsFile)"
+
+          - task: TerraformCLI@0
+            displayName: terraform apply
+            inputs:
+              command: apply
+              environmentServiceName: ${{ parameters.serviceConnection }}
+              workingDirectory: $(Build.SourcesDirectory)/deploy/terraform
+              commandOptions: >-
+                -var-file="$(Build.ArtifactStagingDirectory)/$(deploy.terraform.tfVarsFile)"
+
+          - task: PublishBuildArtifacts@1
+            displayName: Publish artifacts
+            inputs:
+              artifactName: terraform

@@ -1,0 +1,15 @@
+parameters:
+  environment: '' # unique environment ID (e.g. 'prod', 'staging', 'dev', 'ci')
+
+variables:
+  deploy.terraform.backendAzureRmResourceGroupLocation: eastus
+  deploy.terraform.backendAzureRmResourceGroupName: rg-vi-search-trfrm
+  deploy.terraform.backendAzureRmStorageAccountName: stvisearchtrfrm
+  deploy.terraform.backendAzureRmContainerName: tfstate
+  deploy.terraform.tfVarsFile: terraform.tfvars
+
+  ${{ if eq(parameters.environment, 'ci') }}:
+    deploy.terraform.backendAzureRmKey: $[format('{0}{1}.tfstate', 'ci', variables['Build.BuildId'])]
+
+  ${{ if ne(parameters.environment, 'ci') }}:
+    deploy.terraform.backendAzureRmKey: '${{ parameters.environment }}.tfstate'

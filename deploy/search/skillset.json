@@ -1,0 +1,37 @@
+{
+  "name": "${skillset_name}",
+  "skills": [
+    {
+      "@odata.type": "#Microsoft.Skills.Custom.WebApiSkill",
+      "uri": "https://${function_app_name}.azurewebsites.net/api/CustomSkill?code=${function_key}",
+      "batchSize": 1,
+      "context": "/document",
+      "inputs": [
+        {
+          "name": "text",
+          "source": "/document/text"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "reversedText"
+        }
+      ]
+    },
+    {
+      "@odata.type": "#Microsoft.Skills.Text.LanguageDetectionSkill",
+      "inputs": [
+        {
+          "name": "text",
+          "source": "/document/text"
+        }
+      ],
+      "outputs": [
+        {
+          "name": "languageCode",
+          "targetName": "lang"
+        }
+      ]
+    }
+  ]
+}

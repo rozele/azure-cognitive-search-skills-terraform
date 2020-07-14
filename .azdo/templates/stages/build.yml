@@ -1,0 +1,6 @@
+stages:
+- stage: BuildTest
+  displayName: Build and Test
+  jobs:
+  - template: /.azdo/templates/jobs/build/functions.yml
+  - template: /.azdo/templates/jobs/build/terraform.yml

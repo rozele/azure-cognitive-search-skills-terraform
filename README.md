@@ -1,57 +1,65 @@
-# Project Name
+---
+page_type: sample
+languages:
+- csharp
+- terraform
+products:
+- azure-cognitive-search
+- azure-functions
+description: A quickstart project for deploying Azure Cognitive Search, custom Web API skills, and enrichment pipelines in Terraform.
+url-fragment: azure-cognitive-search-skills-terraform
+---
 
-(short, 1-3 sentenced, description of the project)
+# Deploy Azure Cognitive Search Enrichment Pipelines via Terraform
+
+A starter project for deploying Azure Cognitive Search and [enrichment pipelines](https://docs.microsoft.com/en-us/azure/search/cognitive-search-concept-intro) in Terraform. This project compiles a few learnings to simplify the deployment of Cognitive Search, enrichment pipelines, and custom Web API skills in a single Terraform execution plan.
 
 ## Features
 
-This project framework provides the following features:
-
-* Feature 1
-* Feature 2
-* ...
+This project provides the following features:
+* Azure Cognitive Search and Function App resource deployment
+* Function App deployment [via blob](https://docs.microsoft.com/en-us/azure/azure-functions/run-functions-from-deployment-package)
+* Cognitive Search enrichment pipeline
+  * Data source connection [via system-assigned managed identity](https://docs.microsoft.com/en-us/azure/search/search-howto-managed-identities-storage)
+  * [Native soft-deletion detection policy](https://docs.microsoft.com/en-us/azure/search/search-howto-indexing-azure-blob-storage#native-blob-soft-delete-preview)
+  * Example [custom Web API skill](https://docs.microsoft.com/en-us/azure/search/cognitive-search-custom-skill-web-api) deployed to Azure Functions
+* Single Terraform execution plan for all of the above
 
 ## Getting Started
 
-### Prerequisites
+Terraform deploys the end-to-end solution, including all Azure resources, Cognitive Search enrichment pipelines, and Azure Functions for custom Web API skills.
 
-(ideally very short, if any)
+### Dependencies
+* [Terraform](https://www.terraform.io/downloads.html)
+* [.NET Core](https://dotnet.microsoft.com/download)*
 
-- OS
-- Library version
-- ...
+\* This project uses .NET Core to compile the Azure Function, but the solution can also be used for any other language supported by Azure Functions (Node.js, Python, etc.).
 
-### Installation
+### Required Azure Subscription Roles
 
-(ideally very short)
+Whether you are deploying locally or using a service principal, you will need the following roles on the Azure Subscription:
+* **Contributor** - for creating Azure resources
+* **User Access Administrator** - for configuring roles on the Cognitive Search managed identity
+* **Storage Blob Data Contributor** - for deleting blobs from Storage
 
-- npm install [package name]
-- mvn install
-- ...
+### Building the Azure Functions
 
-### Quickstart
-(Add steps to get up and running quickly)
+The Azure Functions deploy via an Azure Blob Storage using the [`WEBSITE_RUN_FROM_PACKAGE` configuration setting](https://docs.microsoft.com/en-us/azure/azure-functions/run-functions-from-deployment-package#enabling-functions-to-run-from-a-package).
 
-1. git clone [repository clone url]
-2. cd [respository name]
-3. ...
+Before deploying with Terraform, build a zip archive containing the Azure Functions package:
+```bash
+dotnet publish src/CognitiveSkills.Functions -o dist/
+pushd dist; zip -r -X ../dist.zip *; popd
+```
 
+### Deploying with Terraform
 
-## Demo
+Terraform will create all Azure resources, send PUT requests to Cognitive Search to create the enrichment pipeline, and deploy the custom Web API skill Azure Functions via a block blob in Azure Storage. Run terraform with the following:
+```bash
+terraform init deploy/terraform
+terraform apply deploy/terraform
+```
 
-A demo app is included to show how to use the project.
-
-To run the demo, follow these steps:
-
-(Add steps to start up the demo)
-
-1.
-2.
-3.
-
-## Resources
-
-(Any additional resources or related projects)
-
-- Link to supporting information
-- Link to similar sample
-- ...
+Terraform will ask you for 2 variables:
+- **environment**: The name of the environment you are deploying. For testing purposes, use something unique like your alias.
+- **functions_package_path**: The path to the Azure Functions package zip. If you used the step above, it's likely `dist.zip`.

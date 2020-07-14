@@ -1,0 +1,9 @@
+{
+  "name": "${data_source_name}",
+  "type":  "azureblob",
+  "credentials": { "connectionString" : "ResourceId=${storage_id}" },
+  "container": { "name" : "${container_name}" },
+  "dataDeletionDetectionPolicy" : {
+    "@odata.type" :"#Microsoft.Azure.Search.NativeBlobSoftDeleteDeletionDetectionPolicy"
+  }
+}

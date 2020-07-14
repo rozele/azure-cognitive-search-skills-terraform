@@ -1,0 +1,17 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CognitiveSkills.Functions", "CognitiveSkills.Functions\CognitiveSkills.Functions.csproj", "{3303ECB3-7437-4ED4-A896-14D144F28EDF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3303ECB3-7437-4ED4-A896-14D144F28EDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3303ECB3-7437-4ED4-A896-14D144F28EDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3303ECB3-7437-4ED4-A896-14D144F28EDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3303ECB3-7437-4ED4-A896-14D144F28EDF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,27 @@
+jobs:
+- job: BuildFunctions
+  steps:
+  - task: DotNetCoreCLI@2
+    displayName: Restore NuGet packages
+    inputs:
+      command: 'restore'
+      projects: '$(Build.SourcesDirectory)/src/CognitiveSkills.sln'
+
+  - task: DotNetCoreCLI@2
+    displayName: Build solution
+    inputs:
+      projects: '$(Build.SourcesDirectory)/src/CognitiveSkills.sln'
+      arguments: '--configuration Release /warnaserror'
+
+  - task: DotNetCoreCLI@2
+    displayName: Create Azure Function package
+    inputs:
+      command: publish
+      projects: '$(Build.SourcesDirectory)/src/CognitiveSkills.Functions'
+      publishWebProjects: False
+      arguments: '--configuration Release --output $(Build.ArtifactStagingDirectory)'
+      zipAfterPublish: True
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      artifactName: skills

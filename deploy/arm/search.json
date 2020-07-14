@@ -1,0 +1,32 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "search_service_name": {
+      "type": "string"
+    },
+    "search_service_location": {
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "name": "[parameters('search_service_name')]",
+      "type": "Microsoft.Search/searchServices",
+      "location": "[parameters('search_service_location')]",
+      "apiVersion": "2020-03-13",
+      "identity": {
+        "type": "SystemAssigned"
+      },
+      "sku": {
+        "name": "standard"
+      }
+    }
+  ],
+  "outputs": {
+    "rbac_identity": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Search/searchServices', parameters('search_service_name')), '2020-03-13', 'full').identity.principalId]"
+    }
+  }
+}
