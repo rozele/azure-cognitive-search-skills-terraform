@@ -24,6 +24,6 @@ stages:
 
 - template: /.azdo/templates/stages/deploy.yml
   parameters:
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     environment: dev
     serviceConnection: AzureRMConnection
